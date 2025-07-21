@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <a href="my-books.php" class="text-gray-700 hover:text-indigo-600">My Books</a>
         <a href="exchange.php" class="text-gray-700 hover:text-indigo-600">Exchange</a>
         <a href="messages.php" class="text-gray-700 hover:text-indigo-600">Messages</a>
-        <a href="index.php" class="text-red-600 hover:text-red-800">Logout</a>
+        <a href="logout.php" class="text-red-600 hover:text-red-800">Logout</a>
       </div>
     </div>
   </nav>
