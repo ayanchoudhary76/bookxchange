@@ -29,7 +29,7 @@ $active_exchanges = $result->fetch_row()[0];
 $stmt->close();
 
 // Messages count
-$stmt = $con->prepare("SELECT COUNT(*) FROM messages WHERE receiver_id = ?");
+$stmt = $con->prepare("SELECT COUNT(*) FROM messages WHERE receiver_id = ? AND is_read = 0");
 $stmt->bind_param("i", $_SESSION['user_id']);
 $stmt->execute();
 $result = $stmt->get_result();

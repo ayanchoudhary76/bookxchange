@@ -1,5 +1,9 @@
 <?php
-session_start();
+// FIX: Safely start the session only if it's not already active.
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 if (!isset($_SESSION['user_id'])) {
     header("location: index.php");
     exit();
@@ -13,15 +17,14 @@ if ($con->connect_error) {
     die("Connection failed: " . $con->connect_error);
 }
 
-// Check for any messages from remove-book.php
+// Check for any messages
 $message = '';
 if (isset($_SESSION['message'])) {
     $message = $_SESSION['message'];
     unset($_SESSION['message']);
 }
 
-
-$stmt = $con->prepare("SELECT ub.id as user_book_id, b.title,b.author,b.isbn,g.name as genre, b.description,l.name as language, b.publication_year,b.publisher,b.page_count, ub.status,ub.added_at FROM user_books ub JOIN books b ON ub.book_id=b.id LEFT JOIN genres g ON b.genre_id=g.id LEFT JOIN languages l ON b.language_id=l.id WHERE ub.user_id=? ORDER BY ub.added_at DESC");
+$stmt = $con->prepare("SELECT ub.id as user_book_id, b.title, b.author, b.isbn, g.name as genre, b.description, l.name as language, b.publication_year, b.publisher, b.page_count, ub.status, ub.added_at FROM user_books ub JOIN books b ON ub.book_id=b.id LEFT JOIN genres g ON b.genre_id=g.id LEFT JOIN languages l ON b.language_id=l.id WHERE ub.user_id=? ORDER BY ub.added_at DESC");
 $stmt->bind_param("i", $_SESSION['user_id']);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -31,22 +34,17 @@ while ($row = $result->fetch_assoc()) {
 }
 $stmt->close();
 $con->close();
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>My Books - BookXchange</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .more-menu {
-            display: none;
-        }
+        .more-menu { display: none; }
     </style>
 </head>
-
 <body class="bg-gray-200 min-h-screen">
 
     <nav class="bg-gray-100 shadow-sm border-b">
@@ -69,7 +67,7 @@ $con->close();
 
         <?php if ($message) : ?>
             <div class="mb-4 p-4 rounded text-white <?php echo strpos($message, 'Successfully') !== false ? 'bg-green-500' : 'bg-red-500'; ?>">
-                <?php echo $message; ?>
+                <?php echo htmlspecialchars($message); ?>
             </div>
         <?php endif; ?>
 
@@ -83,9 +81,7 @@ $con->close();
                             <h3 class="text-xl font-bold text-indigo-700 mb-2 w-5/6"><?php echo htmlspecialchars($book['title']); ?></h3>
                             <div class="relative">
                                 <button class="text-gray-500 hover:text-gray-700 focus:outline-none more-button">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                                    </svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
                                 </button>
                                 <div class="more-menu absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
                                     <a href="remove-book.php?id=<?php echo $book['user_book_id']; ?>" class="block px-4 py-2 text-sm text-red-700 hover:bg-gray-100" onclick="return confirm('Are you sure you want to remove this book?');">Remove Book</a>
@@ -94,73 +90,72 @@ $con->close();
                         </div>
 
                         <p class="text-gray-700 mb-1"><span class="font-semibold">Author: </span><?php echo htmlspecialchars($book['author']); ?></p>
-                        <?php if ($book['genre']) : ?>
-                            <p class="text-gray-600 mb-1"><span class="font-semibold">Genre:</span> <?php echo htmlspecialchars($book['genre']); ?></p>
-                        <?php endif; ?>
-                        <?php if ($book['language']) : ?>
-                            <p class="text-gray-600 mb-1"><span class="font-semibold">Language:</span> <?php echo htmlspecialchars($book['language']); ?></p>
-                        <?php endif; ?>
-                        <?php if ($book['publication_year']) : ?>
-                            <p class="text-gray-600 mb-1"><span class="font-semibold">Year:</span> <?php echo htmlspecialchars($book['publication_year']); ?></p>
-                        <?php endif; ?>
-                        <?php if ($book['publisher']) : ?>
-                            <p class="text-gray-600 mb-1"><span class="font-semibold">Publisher:</span> <?php echo htmlspecialchars($book['publisher']); ?></p>
-                        <?php endif; ?>
-                        <?php if ($book['page_count']) : ?>
-                            <p class="text-gray-600 mb-1"><span class="font-semibold">Pages:</span> <?php echo htmlspecialchars($book['page_count']); ?></p>
-                        <?php endif; ?>
-                        <?php if ($book['isbn']) : ?>
-                            <p class="text-gray-600 mb-1"><span class="font-semibold">ISBN:</span> <?php echo htmlspecialchars($book['isbn']); ?></p>
-                        <?php endif; ?>
-                        <?php if ($book['description']) : ?>
-                            <p class="text-gray-600 mb-2"><span class="font-semibold">Description:</span> <?php echo nl2br(htmlspecialchars($book['description'])); ?></p>
-                        <?php endif; ?>
+                        
                         <div class="mt-auto flex justify-between items-center pt-4">
                             <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold
                                 <?php
                                 switch ($book['status']) {
-                                    case 'available':
-                                        echo 'bg-green-100 text-green-700';
-                                        break;
-                                    case 'requested':
-                                        echo 'bg-yellow-100 text-yellow-700';
-                                        break;
-                                    case 'exchanged':
-                                        echo 'bg-blue-100 text-blue-700';
-                                        break;
-                                    case 'removed':
-                                        echo 'bg-gray-200 text-gray-500';
-                                        break;
-                                    default:
-                                        echo 'bg-gray-100 text-gray-700';
+                                    case 'available': echo 'bg-green-100 text-green-700'; break;
+                                    case 'requested': echo 'bg-yellow-100 text-yellow-700'; break;
+                                    case 'exchanged': echo 'bg-blue-100 text-blue-700'; break;
+                                    case 'removed': echo 'bg-gray-200 text-gray-500'; break;
+                                    default: echo 'bg-gray-100 text-gray-700';
                                 }
                                 ?>">
-                                <?php echo ucfirst($book['status']); ?>
+                                <?php echo ucfirst(htmlspecialchars($book['status'])); ?>
                             </span>
                             <span class="text-xs text-gray-400"><?php echo date('M d, Y', strtotime($book['added_at'])); ?></span>
                         </div>
+                        
+                        <?php if ($book['status'] === 'exchanged'): ?>
+                        <div class="mt-4">
+                            <button class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 make-available-btn" data-book-id="<?php echo $book['user_book_id']; ?>">
+                                Make Available for Exchange
+                            </button>
+                        </div>
+                        <?php endif; ?>
+                        
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>
     </main>
-    <script>
-        document.addEventListener('click', function(event) {
-            // Close all more-menus
-            document.querySelectorAll('.more-menu').forEach(function(menu) {
-                menu.style.display = 'none';
-            });
 
-            // If the click is on a more-button, toggle its menu
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('click', function(event) {
+            document.querySelectorAll('.more-menu').forEach(menu => menu.style.display = 'none');
             if (event.target.closest('.more-button')) {
                 const menu = event.target.closest('.relative').querySelector('.more-menu');
-                if (menu) {
-                    menu.style.display = 'block';
-                }
+                if (menu) menu.style.display = 'block';
             }
         });
+
+        const availableBtns = document.querySelectorAll('.make-available-btn');
+        availableBtns.forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const userBookId = this.dataset.bookId;
+                if (!confirm('Are you sure you want to make this book available for exchange again?')) {
+                    return;
+                }
+                try {
+                    const response = await fetch('api/update_book_status.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_book_id: userBookId })
+                    });
+                    const result = await response.json();
+                    alert(result.message);
+                    if(result.success) {
+                        window.location.reload();
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                }
+            });
+        });
+    });
     </script>
-
 </body>
-
 </html>
