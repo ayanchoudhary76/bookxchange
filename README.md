@@ -49,15 +49,15 @@ BookXchange/
 │   ├── remove-book.php           # Remove a book
 │   ├── logout.php                 # End session
 │   └── api/                       # API endpoints
-│       ├── get\_available\_books.php
-│       ├── get\_my\_available\_books.php
-│       ├── get\_incoming\_requests.php
-│       ├── get\_my\_requests.php
-│       ├── get\_conversations.php
-│       ├── get\_messages.php
-│       ├── send\_message.php
-│       ├── handle\_exchange\_request.php
-│       └── update\_book\_status.php
+│       ├── get_available_books.php
+│       ├── get_my_available_books.php
+│       ├── get_incoming_requests.php
+│       ├── get_my_requests.php
+│       ├── get_conversations.php
+│       ├── get_messages.php
+│       ├── send_message.php
+│       ├── handle_exchange_request.php
+│       └── update_book_status.php
 
 ````
 
