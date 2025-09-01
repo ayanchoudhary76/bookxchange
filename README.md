@@ -110,7 +110,4 @@ BookXchange/
 
 
 
-If you want, I can **also include a “How it Works” flow** with diagrams showing how a book exchange happens and messages are sent. That would make your README even more impressive for GitHub recruiters.  
-
-Do you want me to add that flow section?
 
